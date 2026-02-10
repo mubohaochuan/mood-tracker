@@ -3,6 +3,26 @@ import pandas as pd
 from datetime import datetime
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
+import streamlit as st
+
+# 密码验证：只有输入正确密码才显示内容
+def check_password():
+    # 从Secrets里获取密码
+    correct_password = st.secrets.get("app_password", "")
+    if not correct_password:
+        st.error("请先在Secrets里设置app_password")
+        return False
+    
+    # 显示密码输入框
+    password = st.text_input("请输入访问密码", type="password")
+    if password != correct_password:
+        st.error("密码错误，无权访问")
+        return False
+    return True
+
+# 验证不通过就停止运行
+if not check_password():
+    st.stop()
 
 # ===================== 核心修改1：适配手机端 + 页面配置 =====================
 st.set_page_config(
@@ -132,4 +152,5 @@ if len(df) > 1:
     df_plot = df.copy()
     df_plot["日期"] = pd.to_datetime(df_plot["日期"])
     # 绘制折线图，手机端自适应
+
     st.line_chart(df_plot, x="日期", y=["情绪自评", "加权情绪分"], color=["#1f77b4", "#ff7f0e"])
